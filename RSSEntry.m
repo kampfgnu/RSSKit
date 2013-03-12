@@ -22,12 +22,16 @@
 @synthesize copyright;
 @synthesize attachedMedia;
 @synthesize author;
+@synthesize imageHeight;
 
 - (id) init {
 	self = [super init];
 	NSMutableArray *theCategories = [[NSMutableArray alloc] init];
 	self.categories = theCategories;
 	[theCategories release];
+    
+    self.imageHeight = 0.f;
+    
 	return self;
 }
 

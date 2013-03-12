@@ -22,6 +22,7 @@
 	NSString *copyright;
 	RSSAttachedMedia *attachedMedia;
 	NSString *author;
+    CGFloat imageHeight;
 }
 
 @property (nonatomic, retain) NSString *title;
@@ -35,6 +36,7 @@
 @property (nonatomic, retain) NSString *copyright;
 @property (nonatomic, retain) RSSAttachedMedia *attachedMedia;
 @property (nonatomic, retain) NSString *author;
+@property (nonatomic, readwrite) CGFloat imageHeight;
 
 @end
 

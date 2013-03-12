@@ -14,7 +14,7 @@
 @protocol RSSParserDelegate;
 
 
-@interface RSSParser: NSObject {
+@interface RSSParser: NSObject <NSXMLParserDelegate> {
 	NSString *url;
 	NSXMLParser *xmlParser;
 	NSMutableArray *tagStack;
@@ -30,7 +30,11 @@
 
 - (id) initWithUrl:(NSString *)theUrl synchronous:(BOOL)sync;
 - (id) initWithUrl:(NSString *)theUrl;
+- (id) initWithData:(NSData *)theData;
+- (id) initWithXMLParser:(NSXMLParser *)theParser;
 - (void) parse;
+//- (void)setCompletionBlock:(void (^)(RSSParser *rssParser, RSSFeed *rssFeed))completionBlock;
+- (void)setCompletionBlockWithSuccess:(void (^)(RSSParser *rssParser, RSSFeed *rssFeed))success;
 
 @end
 

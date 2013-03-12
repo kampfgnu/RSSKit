@@ -9,12 +9,21 @@
 #import "RSSParser.h"
 #import "NSMutableString+RSSKit.h"
 
+@interface RSSParser ()
+
+@property (nonatomic, readwrite) BOOL useData;
+
+@end
+
+
 
 @implementation RSSParser
 
 @synthesize delegate;
 @synthesize url;
 @synthesize synchronous;
+
+void (^completionBlock)(RSSParser *rssParser, RSSFeed *rssFeed);
 
 - (id) initWithUrl:(NSString *)theUrl synchronous:(BOOL)sync {
 	self = [super init];
@@ -39,6 +48,33 @@
 	return self;
 }
 
+- (id) initWithData:(NSData *)theData {
+    self = [super init];
+    if (self) {
+        self.useData = YES;
+        
+        xmlParser = [[NSXMLParser alloc] initWithData:theData];
+		[xmlParser setDelegate:self];
+        
+    }
+    return self;
+}
+
+- (id) initWithXMLParser:(NSXMLParser *)theParser {
+    self = [super init];
+    if (self) {
+        self.useData = YES;
+        
+        xmlParser = [theParser retain];
+        xmlParser.delegate = self;
+    }
+    
+    return self;
+}
+
+- (void)setCompletionBlockWithSuccess:(void (^)(RSSParser *rssParser, RSSFeed *rssFeed))success {
+    completionBlock = success;
+}
 - (void) dealloc {
 	[xmlParser setDelegate:NULL];
 	[xmlParser release];
@@ -49,12 +85,14 @@
 // self
 
 - (void) parse {
-	if (!self.synchronous) {
-		NSURL *contentUrl = [[NSURL alloc] initWithString:self.url];
-		xmlParser = [[NSXMLParser alloc] initWithContentsOfURL:contentUrl];
-		[contentUrl release];
-		[xmlParser setDelegate:self];
-	}
+    if (! self.useData) {
+        if (!self.synchronous) {
+            NSURL *contentUrl = [[NSURL alloc] initWithString:self.url];
+            xmlParser = [[NSXMLParser alloc] initWithContentsOfURL:contentUrl];
+            [contentUrl release];
+            [xmlParser setDelegate:self];
+        }
+    }
 	[xmlParser parse];
 }
 
@@ -69,10 +107,18 @@
 - (void) parserDidEndDocument:(NSXMLParser *)parser {
 	[tagStack release];
 	[tagPath release];
-	if ([delegate respondsToSelector:@selector(rssParser:parsedFeed:)]) {
-		[delegate rssParser:self parsedFeed:feed];
-	}
-	[feed release];
+    
+    //block
+    if (completionBlock) {
+        completionBlock(self, feed);
+    }
+    else {
+        if ([delegate respondsToSelector:@selector(rssParser:parsedFeed:)]) {
+            [delegate rssParser:self parsedFeed:feed];
+        }
+    }
+    [feed release];
+        
 }
 
 - (void) parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)error {
